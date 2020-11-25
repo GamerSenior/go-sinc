@@ -29,6 +29,7 @@ import (
 )
 
 var buildCore bool
+var upload bool
 
 func runMavenCleanInstall() {
 	mvnCmd := exec.Command("mvn", "clean", "install")
@@ -121,4 +122,5 @@ func init() {
 	// is called directly, e.g.:
 	// buildCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	buildCmd.Flags().BoolVarP(&buildCore, "core", "c", false, "Compila o módulo Core da aplicação")
+	buildCmd.Flags().BoolVarP(&upload, "upload", "u", false, "Realiza upload do módulo compilado no FTP configurado")
 }
