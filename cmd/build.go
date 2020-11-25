@@ -16,13 +16,13 @@ limitations under the License.
 package cmd
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"os/exec"
-	"sync"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -32,34 +32,15 @@ var buildCore bool
 
 func runMavenCleanInstall() {
 	mvnCmd := exec.Command("mvn", "clean", "install")
-	var stdout, stderr []byte
-	var errStdout, errStderr error
-	stdoutIn, _ := mvnCmd.StdoutPipe()
-	stderrIn, _ := mvnCmd.StderrPipe()
-	err := mvnCmd.Start()
-	if err != nil {
-		log.Fatalf("cmd.Start() failed with '%s'\n", err)
-	}
+	var stdoutBuf, stderrBuf bytes.Buffer
+	mvnCmd.Stdout = io.MultiWriter(os.Stdout, &stdoutBuf)
+	mvnCmd.Stderr = io.MultiWriter(os.Stderr, &stderrBuf)
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		stdout, errStdout = copyAndCapture(os.Stdout, stdoutIn)
-		wg.Done()
-	}()
-
-	stderr, errStderr = copyAndCapture(os.Stderr, stderrIn)
-
-	wg.Wait()
-
-	err = mvnCmd.Wait()
+	err := mvnCmd.Run()
 	if err != nil {
 		log.Fatalf("cmd.Run() failed with %s\n", err)
 	}
-	if errStdout != nil || errStderr != nil {
-		log.Fatal("failed to capture stdout or stderr\n")
-	}
-	outStr, errStr := string(stdout), string(stderr)
+	outStr, errStr := string(stdoutBuf.Bytes()), string(stderrBuf.Bytes())
 	fmt.Printf("\nout:\n%s\nerr:\n%s\n", outStr, errStr)
 }
 
