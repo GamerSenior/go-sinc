@@ -32,7 +32,7 @@ import (
 var buildCore bool
 var upload bool
 
-func runMavenCleanInstall() {
+func runMavenCleanInstall() error {
 	mvnCmd := exec.Command("mvn", "clean", "install")
 	var stdoutBuf, stderrBuf bytes.Buffer
 	mvnCmd.Stdout = io.MultiWriter(os.Stdout, &stdoutBuf)
@@ -40,10 +40,12 @@ func runMavenCleanInstall() {
 
 	err := mvnCmd.Run()
 	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
+		return errors.New("Erro durante compilação do projeto")
 	}
-	outStr, errStr := string(stdoutBuf.Bytes()), string(stderrBuf.Bytes())
-	fmt.Printf("\nout:\n%s\nerr:\n%s\n", outStr, errStr)
+
+	outStr := string(stdoutBuf.Bytes())
+	fmt.Printf("\nout:\n%s", outStr)
+	return nil
 }
 
 // buildCmd represents the build command
@@ -74,21 +76,31 @@ to quickly create a Cobra application.`,
 			err := os.Chdir(sincDir + "/sinc-core")
 			if err != nil {
 				fmt.Println("Não foi possível acessar JAVA_SINC_DIR")
+				return
 			}
-			runMavenCleanInstall()
+
+			if err := runMavenCleanInstall(); err != nil {
+				log.Println(err)
+				return
+			}
 		}
 
 		modulePath := sincDir + "/" + args[0]
 		err := os.Chdir(modulePath)
 		if err != nil {
 			fmt.Println("Erro ao acessar diretório " + modulePath)
+			return
 		}
-		runMavenCleanInstall()
+		if err := runMavenCleanInstall(); err != nil {
+			log.Println(err)
+			return
+		}
 
 		if upload {
 			filePath := modulePath + "/war/target/" + args[0] + ".war"
 			if err := ftp.SendToFTP(filePath, Verbose); err != nil {
 				log.Printf("Error ao fazer upload do war: %s", err)
+				return
 			}
 
 		}
