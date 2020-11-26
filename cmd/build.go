@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 NAME HERE <EMAIL ADDRESS>
+Copyright © 2020 Giovani Garcia Abel <abelgiovani@gmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/GamerSenior/go-sinc/internal/ftp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -83,6 +84,9 @@ to quickly create a Cobra application.`,
 			fmt.Println("Erro ao acessar diretório " + modulePath)
 		}
 		runMavenCleanInstall()
+
+		filePath := modulePath + "/war/target/" + args[0]
+		ftp.SendToFTP(filePath)
 	},
 }
 
