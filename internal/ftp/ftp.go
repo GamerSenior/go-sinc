@@ -10,7 +10,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-func SendToFTP(path string) error {
+func SendToFTP(path string, verbose bool) error {
+
 	url := viper.GetString("FTP_URL")
 	if len(url) == 0 {
 		url = "ftp.supportweb.com.br"
@@ -20,6 +21,10 @@ func SendToFTP(path string) error {
 		url += (":" + port)
 	} else {
 		url += ":21"
+	}
+
+	if verbose {
+		log.Printf("Conectando-se ao servidor ftp %s", url)
 	}
 
 	client, err := ftp.Dial(url)
@@ -39,6 +44,10 @@ func SendToFTP(path string) error {
 		return err
 	}
 
+	if verbose {
+		log.Printf("Login realizado com sucesso")
+	}
+
 	f, err := os.Open(path)
 	if err != nil {
 		log.Printf("[FTP] Open: erro ao abrir arquivo")
@@ -51,22 +60,24 @@ func SendToFTP(path string) error {
 		log.Printf("[FTP] Stat: erro ao abrir arquivo")
 		return err
 	}
-	log.Printf("File name: " + stat.Name())
-	log.Printf("Size: " + strconv.FormatInt(stat.Size(), 10))
-	log.Printf("Modification: " + stat.ModTime().String())
-	log.Printf("File mode: %s %04o \n", stat.Mode(), stat.Mode().Perm())
+
+	if verbose {
+		log.Printf("File name: " + stat.Name())
+		log.Printf("Size: " + strconv.FormatInt(stat.Size(), 10))
+		log.Printf("Modification: " + stat.ModTime().String())
+		log.Printf("File mode: %s %04o \n", stat.Mode(), stat.Mode().Perm())
+	}
 
 	if len(dir) > 0 {
+		if verbose {
+			log.Printf("Acessando diretório %s", dir)
+		}
 		if err := client.ChangeDir(dir); err != nil {
 			return err
 		}
 	}
-	curDir, err := client.CurrentDir()
-	if err != nil {
-		return err
-	}
-	log.Printf("Current dir %s", curDir)
-	err = client.Stor(path, f)
+
+	err = client.Stor(stat.Name(), f)
 	if err != nil {
 		log.Printf("[FTP] Stor: erro ao salvar arquivo")
 		return err

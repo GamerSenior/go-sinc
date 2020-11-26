@@ -45,7 +45,7 @@ to quickly create a Cobra application.`,
 		baseDir := viper.GetString("JAVA_SINC_DIR")
 		path := baseDir + "/" + module + "/war/target/" + module + ".war"
 		fmt.Println("Path: " + path)
-		if err := ftp.SendToFTP(path); err != nil {
+		if err := ftp.SendToFTP(path, Verbose); err != nil {
 			log.Println(err)
 		}
 	},

@@ -27,6 +27,10 @@ import (
 
 var cfgFile string
 
+//Verbose - bool: flag responsável por gerar output
+//mais detalhados para fins de depuração
+var Verbose bool
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "sinc-cli",
@@ -62,7 +66,7 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 }
 
 // initConfig reads in config file and ENV variables if set.
