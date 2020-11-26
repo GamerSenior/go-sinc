@@ -85,9 +85,12 @@ to quickly create a Cobra application.`,
 		}
 		runMavenCleanInstall()
 
-		filePath := modulePath + "/war/target/" + args[0] + ".war"
-		if err := ftp.SendToFTP(filePath, Verbose); err != nil {
-			log.Printf("Error ao fazer upload do war: %s", err)
+		if upload {
+			filePath := modulePath + "/war/target/" + args[0] + ".war"
+			if err := ftp.SendToFTP(filePath, Verbose); err != nil {
+				log.Printf("Error ao fazer upload do war: %s", err)
+			}
+
 		}
 	},
 }

@@ -10,6 +10,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+//SendToFTP recebe dois parâmetros
+//path: caminho do arquivo a ser enviado
+//verbose: output detalhado  para depuração
+//realiza o upload do arquivo para o servidor FTP configurado
 func SendToFTP(path string, verbose bool) error {
 
 	url := viper.GetString("FTP_URL")
@@ -86,5 +90,7 @@ func SendToFTP(path string, verbose bool) error {
 	if err := client.Quit(); err != nil {
 		log.Fatal(err)
 	}
+
+	log.Printf("Upload realizado com sucesso")
 	return nil
 }
